@@ -1,14 +1,22 @@
 #!/usr/bin/python
 
-import GeoIP
 import optparse
 import socket
 import sys
 import  os
 from collections import defaultdict
-from prettytable import PrettyTable
+try:
+    import GeoIP
+except ImportError:
+    print "Error: Maxmind GeoIP Python Module is required and not installed. Please install from: https://github.com/maxmind/geoip-api-python"
+    sys.exit()
+try:
+    from prettytable import PrettyTable
+except ImportError:
+    print "Error: PrettyTable is required and not installed. Please install it by running 'pip install prettytable'"
+    sys.exit()
 
-# MaxMind GeoIP databases must be updated monthly (GeoIP.dat, GeoIPASNum.dat, GeoLiteCity.dat)
+# MaxMind GeoIP databases should be updated monthly (GeoIP.dat, GeoIPASNum.dat, GeoLiteCity.dat)
 # http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz
 # http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz
 # http://geolite.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz
@@ -16,7 +24,11 @@ from prettytable import PrettyTable
 def geoip_query(ip_address):
     try:
         # GeoLiteCity Database
-        gi = GeoIP.open("/home/clong/geoip/GeoLiteCity.dat", GeoIP.GEOIP_STANDARD)
+        try:
+            gi = GeoIP.open("GeoLiteCity.dat", GeoIP.GEOIP_STANDARD)
+        except:
+            print "Please download and gunzip the latest version from http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz"
+            sys.exit()
         record = gi.record_by_addr(ip_address)
         if record['city'] is None: city = "Unknown"
         else: city = record['city']
@@ -28,7 +40,11 @@ def geoip_query(ip_address):
         country_name = record['country_name']
 
         # GeoIPASNum Database
-        go = GeoIP.open("/home/clong/geoip/GeoIPASNum.dat", GeoIP.GEOIP_STANDARD)
+        try:
+            go = GeoIP.open("GeoIPASNum.dat", GeoIP.GEOIP_STANDARD)
+        except:
+            print "Please download and gunzip the latest version from http://geolite.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz"
+            sys.exit()
         as_number, as_name = str(go.org_by_addr(ip_address)).split(" ", 1)
         as_number = as_number.strip("AS")
 
